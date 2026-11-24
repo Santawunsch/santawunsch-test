@@ -1,1 +1,56 @@
-
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SantaWunsch.de</title>
+<style>
+body{background:radial-gradient(#205c40,#08291d);color:#ffe4a3;font-family:Georgia,serif;text-align:center;padding:25px;min-height:90vh}
+button{background:#b72232;color:white;border:2px solid gold;border-radius:35px;padding:18px;font-size:19px;margin:10px}
+input{padding:12px;border-radius:12px;max-width:85%}
+</style>
+</head>
+<body>
+<h1>SantaWunsch.de</h1>
+<p>Kleine Wünsche. Große Weihnachtsmagie.</p>
+<div style="font-size:110px">🎅</div>
+<h2>Dein Anruf beim Weihnachtsmann</h2>
+<input id="name" placeholder="Testname (freiwillig)" autocomplete="off">
+<p id="status">Der Weihnachtsmann wartet auf dich!</p>
+<button onclick="start()">📞 Weihnachtsmann anrufen</button>
+<button onclick="listen()">🎙️ Antworten</button>
+<p id="wish"></p>
+<p>Sprachdemo mit vorgegebenen Fragen. Zunächst nur durch Erwachsene testen.</p>
+<script>
+let step=0,wishes=[];
+function speak(t){
+document.getElementById('status').textContent=t;
+speechSynthesis.cancel();
+let u=new SpeechSynthesisUtterance(t);
+u.lang='de-DE';u.rate=0.85;u.pitch=0.8;u.volume=0.85;
+speechSynthesis.speak(u);
+}
+function start(){
+step=0;wishes=[];
+document.getElementById('wish').textContent='';
+let n=document.getElementById('name').value.trim();
+speak('Ho ho hooo! Hallo '+n+'! Wie schön, dass du mich anrufst! Na, warst du auch schön brav dieses Jahr?');
+}
+function listen(){
+let R=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!R){alert('Spracherkennung nicht verfügbar.');return;}
+if(speechSynthesis.speaking){alert('Bitte warte, bis der Weihnachtsmann fertig gesprochen hat.');return;}
+if(!confirm('Der Browser kann Sprachdaten an seinen Anbieter übertragen. Nur mit erfundenen Angaben testen. Mikrofon aktivieren?'))return;
+let r=new R();r.lang='de-DE';
+r.onerror=e=>document.getElementById('status').textContent='Mikrofonfehler: '+e.error;
+r.onresult=e=>{
+let a=e.results[0][0].transcript;
+if(step===0){step=1;speak('Ho ho ho! Auch meine Wichtel machen manchmal Unsinn. Was wünschst du dir zu Weihnachten?');}
+else if(/^(nein|fertig|nö)/i.test(a)){speak('Vielen Dank! Ich wünsche dir eine wunderschöne Weihnachtszeit!');}
+else{wishes.push(a);document.getElementById('wish').textContent='Wunschzettel: '+wishes.join(', ');speak('Oh, wie schön! Hast du noch einen Wunsch?');}
+};
+r.start();
+}
+</script>
+</body>
+</html>
